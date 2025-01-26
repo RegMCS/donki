@@ -27,13 +27,35 @@ def extract_entities_and_relationships(text):
 
 # Function to create a Pyvis network graph
 def create_custom_pyvis_network(relationships, output_file):
-    net = Network(height='600px', width='100%', directed=False)
+    net = Network(height='600px', width='100%', directed=True)
+
+    threat_keywords = ["attack", "threat", "security", "breach", "vulnerable"]
+
+    involved_entities = set()
+    for subject, verb, obj in relationships:
+        involved_entities.add(subject)
+        involved_entities.add(obj)
+
+    added_nodes = set()
+    for subject, verb, obj in relationships:
+        if subject != obj:  # Ensure no self-referential relationships
+            if subject not in added_nodes:
+                color = "red" if any(keyword in subject.lower() for keyword in threat_keywords) else "lightblue"
+                net.add_node(subject, title=subject, color=color)
+                added_nodes.add(subject)
+            if obj not in added_nodes:
+                color = "red" if any(keyword in subject.lower() for keyword in threat_keywords) else "lightblue"
+                net.add_node(obj, title=obj,color=color)
+                added_nodes.add(obj)
+            edge_color = "red" if any(keyword in verb.lower() for keyword in threat_keywords) else "blue"
+            net.add_edge(subject, obj, label=verb, font=dict(size=20, color=edge_color))
 
     # Add nodes and edges with customizations
-    for subject, verb, obj in relationships:
-        net.add_node(subject, title=subject)
-        net.add_node(obj, title=obj)
-        net.add_edge(subject, obj, label=verb, font=dict(size=20, color="blue"))
+    # for subject, verb, obj in relationships:
+    #     if subject != obj:
+    #         net.add_node(subject, title=subject)
+    #         net.add_node(obj, title=obj)
+    #         net.add_edge(subject, obj, label=verb, font=dict(size=20, color="blue"))
 
     # Save the graph as an HTML file
     net.save_graph(output_file)
@@ -41,16 +63,20 @@ def create_custom_pyvis_network(relationships, output_file):
 @app.route('/')
 def dashboard():
     # Load example data
-    texts = [
-        "Alice is friends with Bob.",
-        "Charlie works with David.",
-        "Alice supervises Charlie.",
-        "Bob knows David."
-    ]
+    excel_file = "news_excerpts_parsed.xlsx"  # Replace with the actual file name
+    try:
+        df = pd.read_excel(excel_file)  # Assuming the file has a column named 'Text'
+    except Exception as e:
+        return f"Error loading Excel file: {str(e)}"
+
+    # Extract the text data from the 'Text' column
+    if 'Text' not in df.columns:
+        return "The Excel file must contain a column named 'Text'."
+    all_texts = df['Text'].dropna().tolist()
 
     # Extract relationships from the text data
     all_relationships = []
-    for text in texts:
+    for text in all_texts:
         relationships = extract_entities_and_relationships(text)
         all_relationships.extend(relationships)
 
