@@ -1,9 +1,8 @@
 from pyvis.network import Network
-import spacynlp
+import os
 
-
-def generate_graph(relationships):
-    net = Network(height='600px', width='100%', directed=False)
+def generate_graph(relationships, outfile):
+    net = Network(height='600px', width='100%', directed=True)
 
     for relationship in relationships:
         if len(relationship) == 2:
@@ -15,18 +14,29 @@ def generate_graph(relationships):
             net.add_node(relationship[0], title=relationship[0])
             net.add_node(relationship[1], title=relationship[1])
 
-            net.add_edge(relationship[0], relationship[2], label=relationship[1])
+            net.add_edge(relationship[0], relationship[1], label=relationship[2])
         else:
             print("ERROR!")
     
-    net.save_graph("entity_relationship.html")
+    outfile = "graphs/" + outfile + '.html'
+
+    net.save_graph(outfile)
 
             
 
 
 def main(text):
 
-    generate_graph(spacynlp.spacynlp_process(text))
+    generate_graph([
+    ("Russia", "North Korea", "provides military cargo and support"),
+    ("South Korea", "Russia", "imposes sanctions and restrictions"),
+    ("Maria Zakharova", "South Korea", "issues diplomatic warnings to"),
+    ("Russian vessels", "North Korea", "transport military cargo to"),
+    ("Russian Foreign Ministry", "South Korea", "condemns actions of"),
+    ("South Korea", "Russian organizations", "places sanctions on"),
+    ("Russia", "Russian citizens", "allows involvement with North Korean programs"),
+    ("Seoul", "Pyongyang", "attempts to restrict military development of")
+], "test")
 
 
 
