@@ -12,7 +12,7 @@ def parse_article(article):
 
     # Ideally, should have our own model for security reasons
 
-    # Case 2: Use PartyRock AWS to generate
+    # Case 2: Use PartyRock AWS to generate, but is blocked by 
 
     # Case 3: Use Claude/OpenAI with prompt
 
