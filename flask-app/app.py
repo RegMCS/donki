@@ -1,40 +1,40 @@
 from flask import Flask, render_template
 import pandas as pd
-import spacy
 from pyvis.network import Network
 import os
+import openai
 
+# Initialize Flask app
 app = Flask(__name__)
 
-# Load the spaCy model for Named Entity Recognition
-nlp = spacy.load("en_core_web_sm")
+# Set your OpenAI API key
+openai.api_key = ""
 
-# Function to extract entities and relationships from text
-def extract_entities_and_relationships(text):
-    doc = nlp(text)
-    relationships = []
+# Function to query GPT for entities and relationships
+def query_gpt_relationship_extraction(text):
+    prompt = f"Extract entities and their relationships from the following text:\n{text}\nOutput the result as a list of tuples where each tuple is (subject, relationship, object)."
 
-    for token in doc:
-        if token.dep_ in ('nsubj', 'dobj', 'pobj') and token.head.pos_ == 'VERB':
-            subject = token.text
-            verb = token.head.text
-            obj = [child.text for child in token.head.children if child.dep_ == 'dobj']
-            obj = obj[0] if obj else None
-            if obj:
-                relationships.append((subject, verb, obj))
-
-    return relationships
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4-turbo",  # Changed model to gpt-4-turbo
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant for extracting entities and relationships."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=200,
+            temperature=0.5
+        )
+        result = eval(response['choices'][0]['message']['content'].strip())  # Convert the output string to a Python list of tuples
+        return result if isinstance(result, list) else []
+    except Exception as e:
+        print(f"Error querying GPT: {e}")
+        return []
 
 # Function to create a Pyvis network graph
 def create_custom_pyvis_network(relationships, output_file):
     net = Network(height='600px', width='100%', directed=True)
 
     threat_keywords = ["attack", "threat", "security", "breach", "vulnerable"]
-
-    involved_entities = set()
-    for subject, verb, obj in relationships:
-        involved_entities.add(subject)
-        involved_entities.add(obj)
 
     added_nodes = set()
     for subject, verb, obj in relationships:
@@ -44,18 +44,11 @@ def create_custom_pyvis_network(relationships, output_file):
                 net.add_node(subject, title=subject, color=color)
                 added_nodes.add(subject)
             if obj not in added_nodes:
-                color = "red" if any(keyword in subject.lower() for keyword in threat_keywords) else "lightblue"
-                net.add_node(obj, title=obj,color=color)
+                color = "red" if any(keyword in obj.lower() for keyword in threat_keywords) else "lightblue"
+                net.add_node(obj, title=obj, color=color)
                 added_nodes.add(obj)
             edge_color = "red" if any(keyword in verb.lower() for keyword in threat_keywords) else "blue"
             net.add_edge(subject, obj, label=verb, font=dict(size=20, color=edge_color))
-
-    # Add nodes and edges with customizations
-    # for subject, verb, obj in relationships:
-    #     if subject != obj:
-    #         net.add_node(subject, title=subject)
-    #         net.add_node(obj, title=obj)
-    #         net.add_edge(subject, obj, label=verb, font=dict(size=20, color="blue"))
 
     # Save the graph as an HTML file
     net.save_graph(output_file)
@@ -74,10 +67,10 @@ def dashboard():
         return "The Excel file must contain a column named 'Text'."
     all_texts = df['Text'].dropna().tolist()
 
-    # Extract relationships from the text data
+    # Extract relationships from the text data using GPT
     all_relationships = []
     for text in all_texts:
-        relationships = extract_entities_and_relationships(text)
+        relationships = query_gpt_relationship_extraction(text)
         all_relationships.extend(relationships)
 
     # Generate the network graph
