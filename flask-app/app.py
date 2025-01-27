@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, send_file
 import pandas as pd
 from pyvis.network import Network
 import os
@@ -9,6 +9,38 @@ app = Flask(__name__)
 
 # Set your OpenAI API key
 openai.api_key = ""
+
+@app.route('/')
+def dashboard():
+    return render_template('dashboard2.html')
+
+    # # Load example data
+    # excel_file = "news_excerpts_parsed.xlsx"  # Replace with the actual file name
+    # try:
+    #     df = pd.read_excel(excel_file)  # Assuming the file has a column named 'Text'
+    # except Exception as e:
+    #     return f"Error loading Excel file: {str(e)}"
+
+    # # Extract the text data from the 'Text' column
+    # if 'Text' not in df.columns:
+    #     return "The Excel file must contain a column named 'Text'."
+    # all_texts = df['Text'].dropna().tolist()
+
+    # # Extract relationships from the text data using GPT
+    # all_relationships = []
+    # for text in all_texts:
+    #     relationships = query_gpt_relationship_extraction(text)
+    #     all_relationships.extend(relationships)
+
+    # # Generate the network graph
+    # graph_path = os.path.join("templates", "pyvis_graph.html")
+    # create_custom_pyvis_network(all_relationships, graph_path)
+
+    # # Pass the graph path to the dashboard template
+    # return render_template('pyvis_graph.html', graph_path="pyvis_graph.html")
+
+
+
 
 # Function to query GPT for entities and relationships
 def query_gpt_relationship_extraction(text):
@@ -53,32 +85,14 @@ def create_custom_pyvis_network(relationships, output_file):
     # Save the graph as an HTML file
     net.save_graph(output_file)
 
-@app.route('/')
-def dashboard():
-    # Load example data
-    excel_file = "news_excerpts_parsed.xlsx"  # Replace with the actual file name
-    try:
-        df = pd.read_excel(excel_file)  # Assuming the file has a column named 'Text'
-    except Exception as e:
-        return f"Error loading Excel file: {str(e)}"
 
-    # Extract the text data from the 'Text' column
-    if 'Text' not in df.columns:
-        return "The Excel file must contain a column named 'Text'."
-    all_texts = df['Text'].dropna().tolist()
+@app.route('/graphs/<graphName>')
+def graph(graphName):
+    return send_file(f'./graphs/{graphName}', mimetype='text/html')
 
-    # Extract relationships from the text data using GPT
-    all_relationships = []
-    for text in all_texts:
-        relationships = query_gpt_relationship_extraction(text)
-        all_relationships.extend(relationships)
 
-    # Generate the network graph
-    graph_path = os.path.join("templates", "pyvis_graph.html")
-    create_custom_pyvis_network(all_relationships, graph_path)
 
-    # Pass the graph path to the dashboard template
-    return render_template('pyvis_graph.html', graph_path="pyvis_graph.html")
+
 
 if __name__ == "__main__":
     app.run(debug=True)

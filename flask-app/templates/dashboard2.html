@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> 
+    <!-- Axios -->
+    <script src='https://unpkg.com/axios/dist/axios.min.js'></script>
+</head>
+
+<body class="bg-dark">
+        <!-- Bootstrap Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">Threat Identifier</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <!-- File Input and Button inside the navbar -->
+                            <input class="form-control" type="file" id="csvFileInput" accept=".csv" style="display: inline-block; width: auto;">
+                        </li>
+                        <li class="nav-item">
+                            <button class="btn btn-primary ms-2" onclick="uploadInfo()">Upload</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+
+        <!-- Dropdown list with all Articles available -->
+        <div class="mb-3">
+            <label for="articleDropdown" class="form-label">Choose an Item:</label>
+            <select class="form-select" id="articleDropdown" onchange="updateInfo()">
+                <option value="" selected>Article</option>
+            </select>
+        </div>
+
+
+        <!-- TODO: FIX BORDERS TO OCCUPY LARGER SPACE -->
+        <!-- Div area for main content-->
+        <div class="container mt-5">
+            <div class="row">
+                <!-- iFrame which will store the graphs occupying 8 columns -->
+                <div class="col-8 col-md-8">
+                    <iframe src="../graphs/test.html" class="w-100" height="500" id="graphDisplay"></iframe>
+                </div>
+                
+                <!-- Information section occupying 4 columns -->
+                <!-- TODO: FIX FORMATTING OF TEXT: maybe the credibility can be on the right? something about columns again -->
+                <div class="col-4 col-md-4">
+                    <div class="p-3 border bg-secondary">
+                        <h3 id="articleName" class="text-white">Article Name</h3>
+                        <h4 id="articleSource" class="text-white">Article Source</h4>
+                        <!-- Should we change the colour based on the credibility? e.g. >80 green -->
+                        <h5 id="articleCredibility" class="text-warning">69</h5>
+                        <a id="articleLink" class="text-danger" href="https://reddit.com/r/ZZZ_Official" target="_blank" rel="noopener noreferrer">Link to article</a>
+                        <p id="articleSummary" class="text-white">AI SUMMARY GOES HERE</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- I feel like we should put links here which allows us to show related articles... Maybe once we get the main DB up first.... -->
+
+
+        </div>
+
+
+
+
+        <!-- TODO: ADD SCRIPTS -->
+        <script>
+
+
+            function uploadInfo() {
+                // Function will send the file uploaded to Flask Server for processing.
+                // Should have a popup which tells users if successful or not, and some error information
+            }
+
+
+            function updateInfo() {
+                // Function will query DB for the graph URL, and information and update graph and information displayed.
+            }
+
+        </script>
+    
+
+ 
+    
+
+    <!-- Bootstrap JS bundle to be placed before the closing </body> tag -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script> 
+</body>
+</html>
