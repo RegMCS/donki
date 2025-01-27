@@ -18,14 +18,47 @@ def generate_graph(relationships, outfile):
         else:
             print("ERROR!")
     
-    outfile = "graphs/" + outfile + '.html'
+    outfile = outfile + '.html'
 
     net.save_graph(outfile)
+
+
+
+
+# Function to create a Pyvis network graph
+def create_custom_pyvis_network(relationships, output_file):
+    net = Network(height='600px', width='100%', directed=True)
+
+    threat_keywords = ["attack", "threat", "security", "breach", "vulnerable"]
+
+    added_nodes = set()
+    for subject, verb, obj in relationships:
+        if subject != obj:  # Ensure no self-referential relationships
+            if subject not in added_nodes:
+                color = "red" if any(keyword in subject.lower() for keyword in threat_keywords) else "lightblue"
+                net.add_node(subject, title=subject, color=color)
+                added_nodes.add(subject)
+            if obj not in added_nodes:
+                color = "red" if any(keyword in obj.lower() for keyword in threat_keywords) else "lightblue"
+                net.add_node(obj, title=obj, color=color)
+                added_nodes.add(obj)
+            edge_color = "red" if any(keyword in verb.lower() for keyword in threat_keywords) else "blue"
+            net.add_edge(subject, obj, label=verb, font=dict(size=20, color=edge_color))
+
+
+    # Hotfix for issue with / in URI which prevents us from saving graph
+    output_file = output_file.split("/")[-1]
+    outfile = output_file + '.html'
+    
+    # Save the graph as an HTML file
+    net.save_graph(outfile)
+
+
 
             
 
 
-def main(text):
+def main():
 
     generate_graph([
     ("Russia", "North Korea", "provides military cargo and support"),
@@ -37,20 +70,20 @@ def main(text):
     ("Russia", "Russian citizens", "allows involvement with North Korean programs"),
     ("Seoul", "Pyongyang", "attempts to restrict military development of")
 ], "test")
+    
+    create_custom_pyvis_network([
+    ("Al-Shabaab", "Somalia", "poses a persistent threat to"),
+    ("Al-Shabaab", "civilians and officials", "targets"),
+    ("Al-Shabaab", "U.N. helicopter", "captures"),
+    ("Al-Shabaab", "six passengers", "takes hostage"),
+    ("Al-Shabaab", "Emirati and Bahraini security officers", "kills in attack"),
+    ("Mohamud’s administration", "Al-Shabaab", "launches a large-scale offensive against"),
+    ("Al-Shabaab", "territory and soldiers", "lose in initial phase of offensive"),
+    ("Somali defense minister", "second phase of offensive", "delays due to logistical and weather challenges")
+], """https://www.nytimes.com/2024/02/27/world/africa/somalia-ethiopia-al-shabab-conflict.html""")
 
 
 
 if __name__ == "__main__":
 
-    sample_text = """Myanmar's military regime is now facing a harder time in getting access to funding globally.
-
-Singapore's United Overseas Bank (UOB) is cutting off ties with banks in Myanmar from Friday (Sep 1), a move that is in step with international sanctions targeting Myanmar's banking industry.
-
-The bank will restrict all incoming and outgoing payments to and from Myanmar accounts. It will also put curbs on Visa and Mastercard transactions from Myanmar.
-
-With this latest move, the Singapore lender is effectively severing ties with its Myanmar counterparts. 
-
-CNA has reached out to the bank but UOB said it cannot comment on client relationships."""
-
-
-    main(sample_text)
+    main()

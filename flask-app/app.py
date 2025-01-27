@@ -1,4 +1,5 @@
-from flask import Flask, render_template, send_file
+from flask import Flask, render_template, send_file, jsonify
+from flask_sqlalchemy import SQLAlchemy
 import pandas as pd
 from pyvis.network import Network
 import os

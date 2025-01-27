@@ -19,10 +19,10 @@
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+                 <!-- File Input and Button inside the navbar -->
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <!-- File Input and Button inside the navbar -->
                             <input class="form-control" type="file" id="csvFileInput" accept=".csv" style="display: inline-block; width: auto;">
                         </li>
                         <li class="nav-item">
@@ -38,7 +38,9 @@
         <div class="mb-3">
             <label for="articleDropdown" class="form-label">Choose an Item:</label>
             <select class="form-select" id="articleDropdown" onchange="updateInfo()">
-                <option value="" selected>Article</option>
+                <!-- This should be dynamically generated, currently hardcoded -->
+                <option value="test" selected>Default Article</option>
+                <option value="somalia-ethiopia-al-shabab-conflict">Somalia Ethiopia Al Shabab Conflict</option> 
             </select>
         </div>
 
@@ -49,7 +51,7 @@
             <div class="row">
                 <!-- iFrame which will store the graphs occupying 8 columns -->
                 <div class="col-8 col-md-8">
-                    <iframe src="../graphs/test.html" class="w-100" height="500" id="graphDisplay"></iframe>
+                    <iframe src="../graphs/test.html.html" class="w-100" height="500" id="graphDisplay"></iframe>
                 </div>
                 
                 <!-- Information section occupying 4 columns -->
@@ -86,6 +88,46 @@
 
             function updateInfo() {
                 // Function will query DB for the graph URL, and information and update graph and information displayed.
+                // Or should we minimise querying and take from somewhere in the DOM?
+
+                var value = document.getElementById("articleDropdown").value;
+
+                // Change the sources
+                document.getElementById("graphDisplay").src = "../graphs/" + value + ".html.html";
+
+                // BRUTE FORCE, TO DEMONSTRATE THE POINT
+                if (value === 'somalia-ethiopia-al-shabab-conflict') {
+                    document.getElementById("articleName").innerText = "Ethiopia conflict";
+                    document.getElementById("articleSource").innerText = "New York Times";
+                    document.getElementById("articleCredibility").innerText = "100";
+                    document.getElementById("articleSummary").innerText = "The Shabab remains a major threat in Somalia, targeting civilians and officials.\n\nIn January, they captured a U.N. helicopter and took six hostages, including four Ukrainians.\n\nThis month, they killed four Emirati and Bahraini officers in a Mogadishu attack.\n\nDespite a U.S.-backed offensive, the Shabab lost territory in central Somalia, but logistical issues have delayed progress in southern Somalia.";
+
+                    
+
+                }
+                else {
+                    document.getElementById("articleName").innerText = "Article Name";
+                    document.getElementById("articleSource").innerText = "Article Source";
+                    document.getElementById("articleCredibility").innerText = "69";
+                    document.getElementById("articleSummary").innerText = "AI SUMMARY GOES HERE";
+
+                }
+
+                // Update colour of number
+                var colourpicker = document.getElementById("articleCredibility");
+                colourpicker.classList.remove('text-success', 'text-danger', 'text-warning');
+                if (Number(colourpicker.innerText) < 50) {
+                    colourpicker.classList.add('text-danger');
+                }
+                else if (Number(colourpicker.innerText) < 70) {
+                    colourpicker.classList.add('text-warning');
+                }
+                else {
+                    colourpicker.classList.add('text-success');
+
+                }
+
+
             }
 
         </script>
