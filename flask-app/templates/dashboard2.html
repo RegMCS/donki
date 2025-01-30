@@ -33,15 +33,13 @@
             </div>
         </nav>
 
-
-        <!-- Dropdown list with all Articles available -->
-        <div class="mb-3">
-            <label for="articleDropdown" class="form-label">Choose an Item:</label>
-            <select class="form-select" id="articleDropdown" onchange="updateInfo()">
-                <!-- This should be dynamically generated, currently hardcoded -->
-                <option value="test" selected>Default Article</option>
-                <option value="somalia-ethiopia-al-shabab-conflict">Somalia Ethiopia Al Shabab Conflict</option> 
-            </select>
+        <!-- Searchbar-->
+        <div class="input-group mb-3">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search for Articles..." aria-label="Search" aria-describedby="basic-addon2" onkeyup="updateSearch()">
+          </div>
+      
+          <!-- Search results container -->
+          <div id="searchResults" class="search-results list-group"></div>
         </div>
 
 
@@ -78,6 +76,49 @@
 
         <!-- TODO: ADD SCRIPTS -->
         <script>
+
+
+            var OFFLINECOPY = []; // This will store all the Articles from the DB for quicker search
+
+            // Once Dashboard loads, get Articles from DB
+            window.onload = function() {
+                axios.get('http://127.0.0.1:5000/getArticles', {}
+                )
+                    .then(response => {                        
+                        for (var article of response.data) {
+                            OFFLINECOPY.push(article[0]);
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    });
+            }
+
+
+            function updateSearch() {
+                // Get references to the DOM elements
+                const searchInput = document.getElementById("searchInput").value;
+                const searchResults = document.getElementById("searchResults");
+
+                searchResults.innerHTML = "";
+                
+                // Filter the data
+                const filteredData = OFFLINECOPY.filter(article => article.toLowerCase().includes(searchInput.toLowerCase()));
+
+            // If no results, display a message
+            if (filteredData.length === 0) {
+                searchResults.innerHTML = '<li class="list-group-item">No results found</li>';
+            } else {
+                // Append filtered data as list items
+                // TODO: Add ability to click on it to send data to updateInfo()
+                filteredData.forEach(item => {
+                    const listItem = document.createElement("li");
+                    listItem.classList.add("list-group-item");
+                    listItem.textContent = item;
+                    searchResults.appendChild(listItem);
+                });
+            }
+        }
 
 
             function uploadInfo() {

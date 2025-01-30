@@ -140,12 +140,12 @@ def testprocessing(input_file):
 
     with open(sql_file, 'w') as outfile:
         for thing in articles_dict.keys():
-            columns = 'link, fullarticle, summary, credibility, related'
+            columns = 'link, fullarticle, articlename, summary, credibility, tags, related'
             text = articles_dict[thing]
             text = text.replace("\\", "\\\\")
             text = text.replace('"', "'")
             thing = thing.replace("\\", "\\\\")
-            values = f""""{thing}", "{text}", NULL, NULL, NULL"""
+            values = f""""{thing}", "{text}", NULL, NULL, NULL, NULL, NULL"""
 
             sql_statement = f"INSERT INTO {table_name} ({columns}) VALUES ({values});\n"
             outfile.write(sql_statement)

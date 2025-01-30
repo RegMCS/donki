@@ -4,6 +4,7 @@ import pandas as pd
 from pyvis.network import Network
 import os
 import openai
+import db
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -90,6 +91,21 @@ def create_custom_pyvis_network(relationships, output_file):
 @app.route('/graphs/<graphName>')
 def graph(graphName):
     return send_file(f'./graphs/{graphName}', mimetype='text/html')
+
+
+@app.route('/getArticles')
+def getArticles():
+    connection = db.connect_to_db()
+    if connection:
+        try:
+            with connection.cursor() as cursor:
+                # This needs to be changed to articlename without LIKE
+                cursor.execute("SELECT link FROM ARTICLES WHERE link LIKE '%cnn%';")
+                test = cursor.fetchall()
+                return jsonify(test)
+        finally:
+            connection.close()
+    return jsonify({"error": "Database connection failed."}), 500
 
 
 
