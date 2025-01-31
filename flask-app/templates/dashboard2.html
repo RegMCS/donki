@@ -133,12 +133,18 @@
             function uploadInfo() {
                 // Function will send the file uploaded to Flask Server for processing.
                 // Should have a popup which tells users if successful or not, and some error information
+
+                // TODO? MAYBE NEED FOR MVP
             }
 
 
             function updateInfo(articleName) {
                 // Clear Search results regardless
                 document.getElementById("searchResults").innerText = '';
+                document.getElementById("articleTags").innerHTML = '';
+                document.getElementById("relatedArticles").innerText = '';
+
+
 
                 // Get information from DB based on the article name
                 axios.get(`http://127.0.0.1:5000/getArticleInfo/${articleName}`, {
@@ -216,11 +222,13 @@
                         })
 
                         // Remove duplicates and Add related articles 
-                        // TODO: FIX DUPLICATE ISSUE
+                        // TODO: FIX DUPLICATE ISSUE AND CAN'T ADD 
 
                         console.log(foundArticles);
                         for (let thing of foundArticles) {
                             console.log(thing);
+                            // TODO: This should iteratively add to the div 'relatedArticles' but it's not working for me
+                            // Need to add an event listener updateInfo, similar to how the search works
                         }
 
                     })
@@ -228,14 +236,6 @@
                         console.error(error);
                     });
             }
-
-
-            function getRelatedArticle(tag) {
-                
-            }
-
-
-
 
 
 
