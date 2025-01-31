@@ -88,6 +88,20 @@ def create_custom_pyvis_network(relationships, output_file):
     net.save_graph(output_file)
 
 
+# TODO extract domain from url, and web page title 
+
+@app.route('/api/articles', methods=['GET'])
+def get_articles():
+    articles = db.get_all_articles()
+    return jsonify(articles)
+
+@app.route('/api/article/<int:article_id>', methods=['GET'])
+def get_article(article_id):
+    article = db.get_article_by_id(article_id)
+    if article:
+        return jsonify(article)
+    return jsonify({'error': 'Article not found'}), 404
+
 @app.route('/graphs/<graphName>')
 def graph(graphName):
     return send_file(f'./graphs/{graphName}', mimetype='text/html')
