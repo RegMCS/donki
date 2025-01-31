@@ -15,7 +15,7 @@ db_config = {
 def connect_to_db():
     try:
         connection = pymysql.connect(
-            host=db_config['host'],  # Use localhost since we're using an SSH tunnel
+            host=db_config['host'],
             port=int(db_config['db_port']),
             user=db_config['user'],
             password=db_config['password'],

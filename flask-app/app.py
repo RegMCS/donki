@@ -93,20 +93,46 @@ def graph(graphName):
     return send_file(f'./graphs/{graphName}', mimetype='text/html')
 
 
-@app.route('/getArticles')
-def getArticles():
+@app.route('/getArticleNames')
+def getArticleNames():
     connection = db.connect_to_db()
     if connection:
         try:
             with connection.cursor() as cursor:
                 # This needs to be changed to articlename without LIKE
-                cursor.execute("SELECT link FROM ARTICLES WHERE link LIKE '%cnn%';")
+                # cursor.execute("SELECT articlename FROM ARTICLES;") # Ideal scenario
+                cursor.execute("SELECT articlename FROM ARTICLES WHERE articlename IS NOT NULL;") # MVP
                 test = cursor.fetchall()
                 return jsonify(test)
         finally:
             connection.close()
     return jsonify({"error": "Database connection failed."}), 500
 
+@app.route('/getArticleInfo/<articleName>')
+def getArticleInfo(articleName):
+    connection = db.connect_to_db()
+    if connection:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT * FROM ARTICLES WHERE articlename = %s;", (articleName,))
+                test = cursor.fetchall()
+                return jsonify(test)
+        finally:
+            connection.close()
+    return jsonify({"error": "Database connection failed."}), 500
+
+@app.route('/getRelatedArticle/<tag>')
+def getRelatedAritcle(tag):
+    connection = db.connect_to_db()
+    if connection:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT articlename FROM ARTICLES WHERE tags LIKE '%{0}%' LIMIT 2;".format(tag)) # Only return maximum 2
+                test = cursor.fetchall()
+                return jsonify(test)
+        finally:
+            connection.close()
+    return jsonify({"error": "Database connection failed."}), 500
 
 
 
