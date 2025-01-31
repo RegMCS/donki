@@ -1,0 +1,155 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 600px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "lightblue", "id": "Somalia\u0027s fragile central government", "label": "Somalia\u0027s fragile central government", "shape": "dot", "title": "Somalia\u0027s fragile central government"}, {"color": "lightblue", "id": "after the nationwide chaos that began with the fall of dictator Siad Barre in 1991", "label": "after the nationwide chaos that began with the fall of dictator Siad Barre in 1991", "shape": "dot", "title": "after the nationwide chaos that began with the fall of dictator Siad Barre in 1991"}, {"color": "lightblue", "id": "dictator Siad Barre in 1991", "label": "dictator Siad Barre in 1991", "shape": "dot", "title": "dictator Siad Barre in 1991"}, {"color": "lightblue", "id": "Mogadishu stadium", "label": "Mogadishu stadium", "shape": "dot", "title": "Mogadishu stadium"}, {"color": "lightblue", "id": "after the fall of Siad Barre in 1991", "label": "after the fall of Siad Barre in 1991", "shape": "dot", "title": "after the fall of Siad Barre in 1991"}, {"color": "lightblue", "id": "The air", "label": "The air", "shape": "dot", "title": "The air"}, {"color": "lightblue", "id": "anticipation", "label": "anticipation", "shape": "dot", "title": "anticipation"}, {"color": "lightblue", "id": "Thousands", "label": "Thousands", "shape": "dot", "title": "Thousands"}, {"color": "lightblue", "id": "the stadium each afternoon", "label": "the stadium each afternoon", "shape": "dot", "title": "the stadium each afternoon"}, {"color": "lightblue", "id": "Crowds", "label": "Crowds", "shape": "dot", "title": "Crowds"}, {"color": "lightblue", "id": "the thrill of competition", "label": "the thrill of competition", "shape": "dot", "title": "the thrill of competition"}, {"color": "lightblue", "id": "Al-Shabab", "label": "Al-Shabab", "shape": "dot", "title": "Al-Shabab"}, {"color": "lightblue", "id": "the Islamic State", "label": "the Islamic State", "shape": "dot", "title": "the Islamic State"}, {"color": "lightblue", "id": "hotels, government offices and other public places", "label": "hotels, government offices and other public places", "shape": "dot", "title": "hotels, government offices and other public places"}, {"color": "lightblue", "id": "Many Somalis", "label": "Many Somalis", "shape": "dot", "title": "Many Somalis"}, {"color": "lightblue", "id": "the stadium", "label": "the stadium", "shape": "dot", "title": "the stadium"}, {"color": "lightblue", "id": "The stadium", "label": "The stadium", "shape": "dot", "title": "The stadium"}, {"color": "red", "id": "a heavy security presence", "label": "a heavy security presence", "shape": "dot", "title": "a heavy security presence"}, {"color": "lightblue", "id": "Jubbaland player Mohamud Abdirahim", "label": "Jubbaland player Mohamud Abdirahim", "shape": "dot", "title": "Jubbaland player Mohamud Abdirahim"}, {"color": "lightblue", "id": "\"My praise be to God\"", "label": "\"My praise be to God\"", "shape": "dot", "title": "\"My praise be to God\""}, {"color": "lightblue", "id": "\"This tournament, in which all of Somalia\u0027s regions participate, is exceptionally special\"", "label": "\"This tournament, in which all of Somalia\u0027s regions participate, is exceptionally special\"", "shape": "dot", "title": "\"This tournament, in which all of Somalia\u0027s regions participate, is exceptionally special\""}, {"color": "lightblue", "id": "\"It will become a part of our history\"", "label": "\"It will become a part of our history\"", "shape": "dot", "title": "\"It will become a part of our history\""}, {"color": "lightblue", "id": "Jubbaland player Mohamud Abdirahim\u0027s team", "label": "Jubbaland player Mohamud Abdirahim\u0027s team", "shape": "dot", "title": "Jubbaland player Mohamud Abdirahim\u0027s team"}, {"color": "lightblue", "id": "Hirshabelle in a nail-biting encounter on Tuesday", "label": "Hirshabelle in a nail-biting encounter on Tuesday", "shape": "dot", "title": "Hirshabelle in a nail-biting encounter on Tuesday"}, {"color": "lightblue", "id": "The game", "label": "The game", "shape": "dot", "title": "The game"}, {"color": "lightblue", "id": "a penalty shootout", "label": "a penalty shootout", "shape": "dot", "title": "a penalty shootout"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "font": {"color": "blue", "size": 20}, "from": "Somalia\u0027s fragile central government", "label": "is still struggling to assert itself", "to": "after the nationwide chaos that began with the fall of dictator Siad Barre in 1991"}, {"arrows": "to", "font": {"color": "blue", "size": 20}, "from": "Somalia\u0027s fragile central government", "label": "began with the fall of", "to": "dictator Siad Barre in 1991"}, {"arrows": "to", "font": {"color": "blue", "size": 20}, "from": "Mogadishu stadium", "label": "fell into neglect", "to": "after the fall of Siad Barre in 1991"}, {"arrows": "to", "font": {"color": "blue", "size": 20}, "from": "The air", "label": "crackles with", "to": "anticipation"}, {"arrows": "to", "font": {"color": "blue", "size": 20}, "from": "Thousands", "label": "pour into", "to": "the stadium each afternoon"}, {"arrows": "to", "font": {"color": "blue", "size": 20}, "from": "Crowds", "label": "roar with", "to": "the thrill of competition"}, {"arrows": "to", "font": {"color": "blue", "size": 20}, "from": "Al-Shabab", "label": "has ties with", "to": "the Islamic State"}, {"arrows": "to", "font": {"color": "red", "size": 20}, "from": "Al-Shabab", "label": "launches attacks on", "to": "hotels, government offices and other public places"}, {"arrows": "to", "font": {"color": "blue", "size": 20}, "from": "Many Somalis", "label": "are willing to brave", "to": "the stadium"}, {"arrows": "to", "font": {"color": "blue", "size": 20}, "from": "The stadium", "label": "has", "to": "a heavy security presence"}, {"arrows": "to", "font": {"color": "blue", "size": 20}, "from": "Jubbaland player Mohamud Abdirahim", "label": "said", "to": "\"My praise be to God\""}, {"arrows": "to", "font": {"color": "blue", "size": 20}, "from": "Jubbaland player Mohamud Abdirahim", "label": "said", "to": "\"This tournament, in which all of Somalia\u0027s regions participate, is exceptionally special\""}, {"arrows": "to", "font": {"color": "blue", "size": 20}, "from": "Jubbaland player Mohamud Abdirahim", "label": "said", "to": "\"It will become a part of our history\""}, {"arrows": "to", "font": {"color": "blue", "size": 20}, "from": "Jubbaland player Mohamud Abdirahim\u0027s team", "label": "beat", "to": "Hirshabelle in a nail-biting encounter on Tuesday"}, {"arrows": "to", "font": {"color": "blue", "size": 20}, "from": "The game", "label": "went to", "to": "a penalty shootout"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
