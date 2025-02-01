@@ -122,29 +122,8 @@
     <div class="container-fluid mt-5">
         <div class="row">
             <!-- iFrame which will store the graphs occupying 8 columns -->
-            <div class="col-12 col-md-8">
-                <iframe src="../graphs/entity_relationship_graph.html" class="w-100" height="500" id="graphDisplay"></iframe>
-            </div>
-
-            <!-- Information section occupying 4 columns -->
-            <!-- TODO: FIX FORMATTING OF TEXT: maybe the credibility can be on the right? something about columns again -->
-            <div class="col-12 col-md-4 flex-column">
-                <div class="p-3 border bg-secondary">
-                    <h3 id="articleName" class="text-white">Article Name</h3>
-                    <h4 id="articleSource" class="text-white">Article Source</h4>
-                    <!-- Should we change the colour based on the credibility? e.g. >80 green -->
-                    <h5 id="articleCredibility" class="text-warning">69</h5>
-                    <a id="articleLink" class="text-danger" href="https://reddit.com/r/ZZZ_Official" target="_blank"
-                        rel="noopener noreferrer">Link to article</a>
-                    <p id="articleSummary" class="text-white">AI SUMMARY GOES HERE</p>
-
-                    <h6>Related</h5>
-                        <div id="relatedArticles"></div>
-                        <h6>Tags</h5>
-                            <div id="articleTags"></div>
-
-
-                </div>
+            <div class="col-12">
+                <iframe src="/generate_graph?search=Kill" class="w-100" height="500" id="graphDisplay"></iframe>
             </div>
         </div>
 
@@ -185,7 +164,7 @@
 
             // If no results, display a message
             if (filteredData.length === 0) {
-                searchResults.innerHTML = '<li class="list-group-item">No results found</li>';
+                // searchResults.innerHTML = '<li class="list-group-item">No results found</li>';
             } else {
                 // Append filtered data as list items
                 // TODO: Add ability to click on it to send data to updateInfo()
@@ -369,7 +348,8 @@
             );
 
             if (filteredArticles.length === 0) {
-                searchResults.innerHTML = '<div class="list-group-item">No results found</div>';
+                // searchResults.innerHTML = '<div class="list-group-item">No results found</div>';
+    
             } else {
                 filteredArticles.forEach(article => {
                     const listItem = document.createElement("div");
