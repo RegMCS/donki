@@ -15,7 +15,7 @@
         <!-- Bootstrap Navbar -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">Threat Identifier</a>
+                <a class="navbar-brand" href="javascript:void(0);" onclick="window.location.reload();">Threat Identifier</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -201,7 +201,6 @@
                         
                         // Add Tags to article and get related articles
                         var tagContainer = document.getElementById("articleTags");
-                        var foundArticles = [];
 
                         tagArray.forEach(word => {
                             var badge = document.createElement('span');
@@ -209,27 +208,10 @@
                             badge.textContent = word; // Set the text of the badge
                             // Append the badge to the container
                             tagContainer.appendChild(badge);
-
-                            // Generate related articles dynamically
-                            axios.get(`http://127.0.0.1:5000/getRelatedArticle/${word}`, {
-                            })
-                            .then(response => {
-                                response.data[0].forEach(element => foundArticles.push(element));
-                            })
-                            .catch( error => {
-                                console.error(error);
-                            });
                         })
 
                         // Remove duplicates and Add related articles 
-                        // TODO: FIX DUPLICATE ISSUE AND CAN'T ADD 
-
-                        console.log(foundArticles);
-                        for (let thing of foundArticles) {
-                            console.log(thing);
-                            // TODO: This should iteratively add to the div 'relatedArticles' but it's not working for me
-                            // Need to add an event listener updateInfo, similar to how the search works
-                        }
+                        addRelatedArticles(tagArray, resultArray[2]);
 
                     })
                     .catch( error => {
@@ -238,6 +220,49 @@
             }
 
 
+            async function addRelatedArticles(myArray, currentArticleName) {
+                // Generate related articles dynamically
+                let related = [];
+
+                for (let word of myArray) {
+                    try {
+                        let response = await axios.get(`http://127.0.0.1:5000/getRelatedArticle/${word}`);
+                        response = response.data.flat();
+                        response.forEach(element => related.push(element));
+                    }
+                    catch (error) {
+                        console.error('Error fetching data:', error);
+                    }
+                }
+
+                // Now should have elements already
+                // console.log(related);
+
+                // Remove all the duplicates and the current article if it is inside
+                let uniqueArray = related.filter((value, index, self) => self.indexOf(value) === index);
+                uniqueArray = uniqueArray.filter(item => item !== currentArticleName);
+                // console.log(uniqueArray);
+
+                // Loop to add to list
+                var articleContainer = document.getElementById("relatedArticles");
+                uniqueArray.forEach(item => {
+                    const anchorItem = document.createElement("a");
+                    anchorItem.textContent = item;
+                    anchorItem.classList.add('text-danger')
+                    // Add a click event listener to the list item
+                    anchorItem.addEventListener("click", function() {
+                        updateInfo(item);
+                    });
+
+                    articleContainer.appendChild(anchorItem);
+                    });
+
+            }
+
+            
+
+
+                                        
 
 
         </script>
