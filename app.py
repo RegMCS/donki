@@ -46,8 +46,7 @@ def dashboard():
 
 # Function to query GPT for entities and relationships
 def query_gpt_relationship_extraction(text):
-    prompt = f"Extract entities and their relationships from the following text:\n{text}\nOutput the result as a list of tuples where each tuple is (subject, relationship, object, is_threat). 'is_threat' should be True if the relationship involves cybersecurity threats, malware, breaches, or attacks.
-    Otherwise, return False."
+    prompt = f"Extract entities and their relationships from the following text:\n{text}\nOutput the result as a list of tuples where each tuple is (subject, relationship, object, is_threat). 'is_threat' should be True if the relationship involves cybersecurity threats, malware, breaches, or attacks. Otherwise, return False."
 
     try:
         response = openai.ChatCompletion.create(

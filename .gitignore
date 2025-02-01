@@ -1,5 +1,5 @@
 .vercel
 .venv
 .env*
-/flask-app/random/__pycache__
-/flask-app/__pycache__
+/random/__pycache__
+/__pycache__
