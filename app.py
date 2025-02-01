@@ -110,8 +110,8 @@ def getArticleNames():
         try:
             with connection.cursor() as cursor:
                 # This needs to be changed to articlename without LIKE
-                # cursor.execute("SELECT articlename FROM ARTICLES;") # Ideal scenario
-                cursor.execute("SELECT articlename FROM ARTICLES WHERE articlename IS NOT NULL;") # MVP
+                cursor.execute("SELECT articlename FROM ARTICLES;") # Ideal scenario
+                # cursor.execute("SELECT articlename FROM ARTICLES WHERE articlename IS NOT NULL;") # MVP
                 test = cursor.fetchall()
                 return jsonify(test)
         finally:

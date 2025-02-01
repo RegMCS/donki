@@ -3,3 +3,4 @@
 .env*
 /random/__pycache__
 /__pycache__
+/flask-app/__pycache__
