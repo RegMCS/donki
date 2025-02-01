@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js"
+        integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css"
+        integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+        crossorigin="anonymous"></script>
+
+    <style type="text/css">
+        #mynetwork {
+            width: 100%;
+            height: 800px;
+            background-color: #ffffff;
+            border: 1px solid lightgray;
+            position: relative;
+            float: left;
+        }
+
+        #loadingBar {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            width: 100%;
+            height: 800px;
+            background-color: rgba(200, 200, 200, 0.8);
+            -webkit-transition: all 0.5s ease;
+            -moz-transition: all 0.5s ease;
+            -ms-transition: all 0.5s ease;
+            -o-transition: all 0.5s ease;
+            transition: all 0.5s ease;
+            opacity: 1;
+        }
+
+        #bar {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            width: 20px;
+            height: 20px;
+            margin: auto auto auto auto;
+            border-radius: 11px;
+            border: 2px solid rgba(30, 30, 30, 0.05);
+            background: rgb(0, 173, 246);
+            /* Old browsers */
+            box-shadow: 2px 0px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        #border {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 500px;
+            height: 23px;
+            margin: auto auto auto auto;
+            box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        #text {
+            position: absolute;
+            top: 8px;
+            left: 530px;
+            width: 30px;
+            height: 50px;
+            margin: auto auto auto auto;
+            font-size: 22px;
+            color: #000000;
+        }
+
+        div.outerBorder {
+            position: relative;
+            top: 400px;
+            width: 600px;
+            height: 44px;
+            margin: auto auto auto auto;
+            border: 8px solid rgba(0, 0, 0, 0.1);
+            background: rgb(252, 252, 252);
+            /* Old browsers */
+            background: -moz-linear-gradient(top, rgba(252, 252, 252, 1) 0%, rgba(237, 237, 237, 1) 100%);
+            /* FF3.6+ */
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(252, 252, 252, 1)), color-stop(100%, rgba(237, 237, 237, 1)));
+            /* Chrome,Safari4+ */
+            background: -webkit-linear-gradient(top, rgba(252, 252, 252, 1) 0%, rgba(237, 237, 237, 1) 100%);
+            /* Chrome10+,Safari5.1+ */
+            background: -o-linear-gradient(top, rgba(252, 252, 252, 1) 0%, rgba(237, 237, 237, 1) 100%);
+            /* Opera 11.10+ */
+            background: -ms-linear-gradient(top, rgba(252, 252, 252, 1) 0%, rgba(237, 237, 237, 1) 100%);
+            /* IE10+ */
+            background: linear-gradient(to bottom, rgba(252, 252, 252, 1) 0%, rgba(237, 237, 237, 1) 100%);
+            /* W3C */
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fcfcfc', endColorstr='#ededed', GradientType=0);
+            /* IE6-9 */
+            border-radius: 72px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+
+<body>
+    <div class="card" style="width: 100%">
+        <div id="mynetwork" class="card-body"></div>
+    </div>
+
+    <div id="loadingBar">
+        <div class="outerBorder">
+            <div id="text">0%</div>
+            <div id="border">
+                <div id="bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        // Initialize global variables
+        var edges;
+        var nodes;
+        var allNodes;
+        var allEdges;
+        var nodeColors;
+        var originalNodes;
+        var network;
+        var container;
+        var options, data;
+        var selectedNodes = [];
+        var highlightedEdge = null;
+
+
+
+
+        // parsing and collecting nodes and edges from the python
+        nodes = new vis.DataSet([{ "color": "#97c2fc", "font": { "color": "black" }, "id": "Starbucks", "label": "Starbucks", "shape": "dot", "title": "Starbucks" }, { "color": "#97c2fc", "font": { "color": "black" }, "id": "federal labor law", "label": "federal labor law", "shape": "dot", "title": "federal labor law" }, { "color": "#97c2fc", "font": { "color": "black" }, "id": "non-union employees", "label": "non-union employees", "shape": "dot", "title": "non-union employees" }, { "color": "#97c2fc", "font": { "color": "black" }, "id": "unions", "label": "unions", "shape": "dot", "title": "unions" }, { "color": "#97c2fc", "font": { "color": "black" }, "id": "employees", "label": "employees", "shape": "dot", "title": "employees" }, { "color": "#97c2fc", "font": { "color": "black" }, "id": "Su Wenqiang", "label": "Su Wenqiang", "shape": "dot", "title": "Su Wenqiang" }, { "color": "#97c2fc", "font": { "color": "black" }, "id": "Singapore\u0027s largest money laundering case", "label": "Singapore\u0027s largest money laundering case", "shape": "dot", "title": "Singapore\u0027s largest money laundering case" }, { "color": "#97c2fc", "font": { "color": "black" }, "id": "13 months\u0027 jail", "label": "13 months\u0027 jail", "shape": "dot", "title": "13 months\u0027 jail" }, { "color": "#97c2fc", "font": { "color": "black" }, "id": "11 charges of money laundering, possessing proceeds from illegal remote gambling offences and lying to get work passes for himself and his wife", "label": "11 charges of money laundering, possessing proceeds from illegal remote gambling offences and lying to get work passes for himself and his wife", "shape": "dot", "title": "11 charges of money laundering, possessing proceeds from illegal remote gambling offences and lying to get work passes for himself and his wife" }]);
+
+
+        edges = new vis.DataSet([{"from": "AE Solution", "label": "manufactured by", "title": "manufactured by", "to": "SMC Nutrition"}, {"from": "European Union", "label": "gave final approval to a landmark law governing", "title": "gave final approval to a landmark law governing", "to": "artificial intelligence"}, {"from": "Islamic Religious Council of Singapore", "label": "oversees", "title": "oversees", "to": "Muslim religious schools"}, {"from": "New York Gov. Kathy Hochul", "label": "made the announcement at the headquarters of the United Federation of Teachers Manhattan", "title": "made the announcement at the headquarters of the United Federation of Teachers Manhattan", "to": "New York Attorney General Letitia James"}, {"from": "US government", "label": "announced new regulations that aim to keep out of cars sold in the United States", "title": "announced new regulations that aim to keep out of cars sold in the United States", "to": "Chinese batteries"}, {"from": "Portugal", "label": "More Housing", "title": "More Housing", "to": "Mais Habita o"}, {"from": "Federal Deposit Insurance Corporation, Federal Reserve and Office of Comptroller of the Currency", "label": "approved", "title": "approved", "to": "new rules to prepare large and regional banks in the case of failure"}, {"from": "Shein", "label": "must face", "title": "must face", "to": "European Union\u0027s strictest level of digital regulations"}, {"from": "Ministry of Health", "label": "governs and regulates the professional conduct and ethics of", "title": "governs and regulates the professional conduct and ethics of", "to": "registered medical practitioners"}, {"from": "Agriculture and Food Industries Ministry", "label": "urged to review price ceiling", "title": "urged to review price ceiling", "to": "chicken breeders"}]);
+
+
+        function drawGraph() {
+            var container = document.getElementById('mynetwork');
+
+            nodeColors = {};
+            allNodes = nodes.get({ returnType: "Object" });
+            for (nodeId in allNodes) {
+                nodeColors[nodeId] = allNodes[nodeId].color;
+            }
+            allEdges = edges.get({ returnType: "Object" });
+            data = { nodes: nodes, edges: edges };
+
+            var options = {
+                "configure": {
+                    "enabled": false
+                },
+                "edges": {
+                    "color": {
+                        "inherit": true
+                    },
+                    "smooth": {
+                        "enabled": true,
+                        "type": "dynamic"
+                    }
+                },
+                "interaction": {
+                    "dragNodes": true,
+                    "hideEdgesOnDrag": false,
+                    "hideNodesOnDrag": false
+                },
+                "physics": {
+                    "enabled": true,
+                    "forceAtlas2Based": {
+                        "avoidOverlap": 0,
+                        "centralGravity": 0.01,
+                        "damping": 0.4,
+                        "gravitationalConstant": -50,
+                        "springConstant": 0.08,
+                        "springLength": 100
+                    },
+                    "solver": "forceAtlas2Based",
+                    "stabilization": {
+                        "enabled": true,
+                        "fit": true,
+                        "iterations": 1000,
+                        "onlyDynamicEdges": false,
+                        "updateInterval": 50
+                    }
+                }
+            };
+            nodeColors = {};
+            allNodes = nodes.get({ returnType: "Object" });
+            for (nodeId in allNodes) {
+                nodeColors[nodeId] = allNodes[nodeId].color;
+            }
+            allEdges = edges.get({ returnType: "Object" });
+            // adding nodes and edges to the graph
+            data = { nodes: nodes, edges: edges };
+
+            var options = {
+                "configure": {
+                    "enabled": false
+                },
+                "edges": {
+                    "color": {
+                        "inherit": true
+                    },
+                    "smooth": {
+                        "enabled": true,
+                        "type": "dynamic"
+                    }
+                },
+                "interaction": {
+                    "dragNodes": true,
+                    "hideEdgesOnDrag": false,
+                    "hideNodesOnDrag": false
+                },
+                "physics": {
+                    "enabled": true,
+                    "forceAtlas2Based": {
+                        "avoidOverlap": 0,
+                        "centralGravity": 0.01,
+                        "damping": 0.4,
+                        "gravitationalConstant": -50,
+                        "springConstant": 0.08,
+                        "springLength": 100
+                    },
+                    "solver": "forceAtlas2Based",
+                    "stabilization": {
+                        "enabled": true,
+                        "fit": true,
+                        "iterations": 1000,
+                        "onlyDynamicEdges": false,
+                        "updateInterval": 50
+                    }
+                }
+            };
+
+
+
+
+
+
+            network = new vis.Network(container, data, options);
+
+
+
+
+
+
+
+
+
+            network.on("click", function (params) {
+                if (params.nodes.length > 0) {
+                    const clickedNode = params.nodes[0];
+
+                    selectedNodes.push(clickedNode);
+
+                    // Highlight the clicked node
+                    nodes.update({
+                        id: clickedNode,
+                        color: {
+                            background: '#FB7E81',
+                            border: '#E04147'
+                        }
+                    });
+
+                    // If we have two nodes selected
+                    if (selectedNodes.length === 2) {
+                        // Check if there's an edge between them
+                        const edgeId = edges.get().find(edge =>
+                            (edge.from === selectedNodes[0] && edge.to === selectedNodes[1]) ||
+                            (edge.from === selectedNodes[1] && edge.to === selectedNodes[0])
+                        )?.id;
+
+                        if (edgeId) {
+                            // Highlight the edge
+                            edges.update({
+                                id: edgeId,
+                                color: '#FB7E81',
+                                width: 4
+                            });
+                            highlightedEdge = edgeId;
+                        }
+
+                        // Reset after delay
+                        setTimeout(() => {
+                            // Reset nodes
+                            selectedNodes.forEach(nodeId => {
+                                nodes.update({
+                                    id: nodeId,
+                                    color: nodeColors[nodeId] || {
+                                        background: '#97c2fc',
+                                        border: '#2B7CE9'
+                                    }
+                                });
+                            });
+
+                            // Reset edge
+                            if (highlightedEdge) {
+                                edges.update({
+                                    id: highlightedEdge,
+                                    color: undefined,
+                                    width: undefined
+                                });
+                                highlightedEdge = null;
+                            }
+
+                            selectedNodes = [];
+                        }, 2000);
+                    }
+                }
+            });
+
+            // Add your original stabilization progress code
+            network.on("stabilizationProgress", function (params) {
+                document.getElementById('loadingBar').removeAttribute("style");
+                var maxWidth = 496;
+                var minWidth = 20;
+                var widthFactor = params.iterations / params.total;
+                var width = Math.max(minWidth, maxWidth * widthFactor);
+                document.getElementById('bar').style.width = width + 'px';
+                document.getElementById('text').innerHTML = Math.round(widthFactor * 100) + '%';
+            });
+
+            network.once("stabilizationIterationsDone", function () {
+                document.getElementById('text').innerHTML = '100%';
+                document.getElementById('bar').style.width = '496px';
+                document.getElementById('loadingBar').style.opacity = 0;
+                setTimeout(function () { document.getElementById('loadingBar').style.display = 'none'; }, 500);
+            });
+
+            return network;
+        }
+
+        drawGraph();
+    </script>
+</body>
+
+</html>

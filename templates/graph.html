@@ -13,18 +13,6 @@
 </head>
 <body>
 
-    <h1>Graph Viewer</h1>
-
-    <!-- Filter Form -->
-    <div class="filters">
-        <form action="/generate_graph" method="get">
-            <!-- Search Filter -->
-            <label for="search">Search Node: </label>
-            <input type="text" id="search" name="search" value="{{ search_query }}" placeholder="Search Node">
-            <button type="submit">Apply Filters</button>
-        </form>
-    </div>
-
     <!-- Graph Container -->
     <div id="graph">
         {{ graph_html | safe }}
