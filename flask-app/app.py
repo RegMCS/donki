@@ -44,11 +44,12 @@ def dashboard():
     # return render_template('pyvis_graph.html', graph_path="pyvis_graph.html")
 
 
-
-
 # Function to query GPT for entities and relationships
 def query_gpt_relationship_extraction(text):
-    prompt = f"Extract entities and their relationships from the following text:\n{text}\nOutput the result as a list of tuples where each tuple is (subject, relationship, object)."
+    prompt = f"Extract entities and their relationships from the following text:\n{text}\nOutput the result as a list of tuples where each tuple is (subject, relationship, object, is_threat). 
+
+    'is_threat' should be True if the relationship involves cybersecurity threats, malware, breaches, or attacks.
+    Otherwise, return False."
 
     try:
         response = openai.ChatCompletion.create(
@@ -70,20 +71,17 @@ def query_gpt_relationship_extraction(text):
 def create_custom_pyvis_network(relationships, output_file):
     net = Network(height='600px', width='100%', directed=True)
 
-    threat_keywords = ["attack", "threat", "security", "breach", "vulnerable"]
-
     added_nodes = set()
-    for subject, verb, obj in relationships:
+    for subject, verb, obj, is_threat in relationships:
         if subject != obj:  # Ensure no self-referential relationships
+            node_color = "red" if is_threat else "lightblue"
+            edge_color = "red" if is_threat else "blue"
             if subject not in added_nodes:
-                color = "red" if any(keyword in subject.lower() for keyword in threat_keywords) else "lightblue"
-                net.add_node(subject, title=subject, color=color)
+                net.add_node(subject, title=subject, color=node_color)
                 added_nodes.add(subject)
             if obj not in added_nodes:
-                color = "red" if any(keyword in obj.lower() for keyword in threat_keywords) else "lightblue"
-                net.add_node(obj, title=obj, color=color)
+                net.add_node(obj, title=obj, color=node_color)
                 added_nodes.add(obj)
-            edge_color = "red" if any(keyword in verb.lower() for keyword in threat_keywords) else "blue"
             net.add_edge(subject, obj, label=verb, font=dict(size=20, color=edge_color))
 
     # Save the graph as an HTML file
