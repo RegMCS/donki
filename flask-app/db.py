@@ -77,3 +77,44 @@ def get_all_articles() -> List[Dict]:
             } for row in results]
     finally:
         connection.close()
+
+def update_article_name(article_id: int, articlename: str) -> bool:
+    connection = connect_to_db()
+    if not connection:
+        return False
+    
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE ARTICLES 
+                SET articlename = %s
+                WHERE id = %s
+            """, (articlename, article_id))
+            connection.commit()
+            return True
+    except Exception as e:
+        print(f"Error updating article name: {e}")
+        connection.rollback()
+        return False
+    finally:
+        connection.close()
+
+def get_articles_without_names() -> List[Dict]:
+    connection = connect_to_db()
+    if not connection:
+        return []
+    
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT id, link 
+                FROM ARTICLES 
+                WHERE articlename IS NULL OR articlename = ''
+            """)
+            results = cursor.fetchall()
+            return [{
+                'id': row[0],
+                'link': row[1]
+            } for row in results]
+    finally:
+        connection.close()

@@ -5,6 +5,8 @@ from pyvis.network import Network
 import os
 import openai
 import db
+import re
+from urllib.parse import urlparse, unquote
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -148,8 +150,71 @@ def getRelatedAritcle(tag):
             connection.close()
     return jsonify({"error": "Database connection failed."}), 500
 
+def extract_title_from_url(url: str) -> str:
+    # Parse the URL
+    parsed_url = urlparse(url)
+    
+    # Split the path into parts and remove empty strings
+    path_parts = [p for p in parsed_url.path.split('/') if p]
+    
+    # For CNN URLs, always take the second-to-last segment if it exists
+    # This handles their standard format of .../section/title/index.html
+    if 'cnn.com' in url and len(path_parts) >= 2:
+        # Get the part before 'index.html'
+        title_part = path_parts[-2]
+    else:
+        # For other URLs, use the previous logic
+        if path_parts and path_parts[-1] in ['index.html', 'index.htm', 'index']:
+            title_part = path_parts[-2] if len(path_parts) >= 2 else ''
+        else:
+            title_part = path_parts[-1]
+    
+    # Convert URL encoding and replace hyphens/underscores with spaces
+    if title_part:
+        title = unquote(title_part).replace('-', ' ').replace('_', ' ')
+        # Clean up: capitalize words and remove extra spaces
+        return ' '.join(word.capitalize() for word in title.split())
+    
+    return ''
 
-
-
+@app.route('/api/update-article-names', methods=['POST'])
+def update_article_names():
+    try:
+        # Get all articles without names
+        articles = db.get_articles_without_names()
+        updated_count = 0
+        skipped = 0
+        
+        for article in articles:
+            try:
+                link = article['link']
+                title = extract_title_from_url(link)
+                
+                # Update the database if we got a valid title
+                if title:
+                    if db.update_article_name(article['id'], title):
+                        updated_count += 1
+                else:
+                    skipped += 1
+                    print(f"Skipped article {article['id']}: Could not extract meaningful title from {link}")
+            except Exception as e:
+                print(f"Error processing article {article['id']}: {str(e)}")
+                skipped += 1
+                continue
+        
+        return jsonify({
+            'success': True,
+            'message': f'Updated {updated_count} article names ({skipped} skipped)',
+            'total_processed': len(articles),
+            'updated': updated_count,
+            'skipped': skipped
+        })
+    
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+    
 if __name__ == "__main__":
     app.run(debug=True)
