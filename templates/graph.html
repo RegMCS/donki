@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Viewer</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vis-network@9.0.4/dist/vis-network.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vis-network@9.0.4/dist/vis-network.min.css" />
+    <style>
+        #graph { height: 600px; width: 100%; border: 1px solid lightgray; }
+        .filters { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <h1>Graph Viewer</h1>
+
+    <!-- Filter Form -->
+    <div class="filters">
+        <form action="/generate_graph" method="get">
+            <!-- Search Filter -->
+            <label for="search">Search Node: </label>
+            <input type="text" id="search" name="search" value="{{ search_query }}" placeholder="Search Node">
+            <button type="submit">Apply Filters</button>
+        </form>
+    </div>
+
+    <!-- Graph Container -->
+    <div id="graph">
+        {{ graph_html | safe }}
+    </div>
+
+</body>
+</html>

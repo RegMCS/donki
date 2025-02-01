@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_file, jsonify
+from flask import Flask, render_template, send_file, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 import pandas as pd
 from pyvis.network import Network
@@ -7,6 +7,9 @@ import openai
 import db
 import re
 from urllib.parse import urlparse, unquote
+import json
+import tempfile
+
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -205,6 +208,71 @@ def update_article_names():
             'success': False,
             'error': str(e)
         }), 500
+    
+import tempfile
+
+@app.route('/generate_graph', methods=['GET', 'POST'])
+def generate_graph():
+    search_query = request.args.get('search', 'Apple')  # Default search term
+
+    # Read the data from the nodes.json file
+    try:
+        with open('nodes.json', 'r') as nodes_file:
+            data = json.load(nodes_file)
+    except Exception as e:
+        return f"Error loading JSON file: {str(e)}"
+
+    # Initialize the Pyvis network
+    net = Network(height='600px', width='100%', directed=True)
+
+    # Step 1: Find all nodes matching the search query
+    matching_nodes = {node['id'] for node in data['nodes'] if search_query.lower() in node['label'].lower()}
+
+    # Step 2: Find all connected nodes (indirectly related)
+    included_nodes = set(matching_nodes)  # Start with matching nodes
+    for edge in data['edges']:
+        if edge['from'] in matching_nodes:
+            included_nodes.add(edge['to'])
+        elif edge['to'] in matching_nodes:
+            included_nodes.add(edge['from'])
+
+    # Step 3: Add the filtered nodes to the network
+    for node in data['nodes']:
+        if node['id'] in included_nodes:
+            net.add_node(
+                node['id'], 
+                label=node['label'],  # Ensure label is explicitly set
+                color=node.get('color', 'blue'),  # Default color if missing
+                shape=node.get('shape', 'dot'),  # Default shape if missing
+                title=node.get('title', ''),  # Tooltip
+                font={"color": node.get('font', {}).get('color', 'black')}  # Ensure font color is set
+            )
+
+    # Step 4: Add edges that connect the included nodes
+    for edge in data['edges']:
+        if edge['from'] in included_nodes and edge['to'] in included_nodes:
+            net.add_edge(edge['from'], edge['to'], 
+                         label=edge.get('label', ''), 
+                         title=edge.get('title', ''))
+
+    # Save to a temporary HTML file and read it
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as temp_file:
+        graph_path = temp_file.name
+        net.save_graph(graph_path)
+
+    with open(graph_path, 'r') as file:
+        graph_html = file.read()
+
+    return render_template('graph.html', graph_html=graph_html, search_query=search_query)
+
+
+
+
+
+
+
+
+
 
 
 
