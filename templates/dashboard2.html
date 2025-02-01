@@ -1,277 +1,486 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <!-- Axios -->
     <script src='https://unpkg.com/axios/dist/axios.min.js'></script>
+
+    <style>
+        .search-results-container {
+            max-height: 200px;
+            /* Adjust this value to control the height of the scrollable area */
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            background-color: rgba(33, 37, 41, 0.95);
+            /* Dark theme background */
+            margin-bottom: 20px;
+        }
+
+        .search-results {
+            margin-bottom: 0;
+        }
+
+        .search-results .list-group-item {
+            background-color: transparent;
+            border-left: none;
+            border-right: none;
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .search-results .list-group-item:first-child {
+            border-top: none;
+        }
+
+        .search-results .list-group-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-results .list-group-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Custom scrollbar styling */
+        .search-results-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .search-results-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .search-results-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .search-results-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+    </style>
 </head>
 
 <body class="bg-dark">
-        <!-- Bootstrap Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="javascript:void(0);" onclick="window.location.reload();">Threat Identifier</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                 <!-- File Input and Button inside the navbar -->
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <input class="form-control" type="file" id="csvFileInput" accept=".csv" style="display: inline-block; width: auto;">
-                        </li>
-                        <li class="nav-item">
-                            <button class="btn btn-primary ms-2" onclick="uploadInfo()">Upload</button>
-                        </li>
-                    </ul>
+    <!-- Bootstrap Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="javascript:void(0);" onclick="window.location.reload();">Threat Identifier</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <!-- File Input and Button inside the navbar -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <input class="form-control" type="file" id="csvFileInput" accept=".csv"
+                            style="display: inline-block; width: auto;">
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-primary ms-2" onclick="uploadInfo()">Upload</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <!-- Search input -->
+                <div class="input-group mb-3">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search for Articles..."
+                        aria-label="Search" aria-describedby="basic-addon2" onkeyup="updateSearch()">
+                </div>
+
+                <!-- Scrollable results container -->
+                <div class="search-results-container">
+                    <div id="searchResults" class="search-results list-group"></div>
                 </div>
             </div>
-        </nav>
-
-        <!-- Searchbar-->
-        <div class="input-group mb-3">
-            <input type="text" id="searchInput" class="form-control" placeholder="Search for Articles..." aria-label="Search" aria-describedby="basic-addon2" onkeyup="updateSearch()">
-          </div>
-      
-          <!-- Search results container -->
-          <div id="searchResults" class="search-results list-group"></div>
         </div>
+    </div>
 
 
-        <!-- TODO: FIX BORDERS TO OCCUPY LARGER SPACE -->
-        <!-- Div area for main content-->
-        <div class="container-fluid mt-5">
-            <div class="row">
-                <!-- iFrame which will store the graphs occupying 8 columns -->
-                <div class="col-12 col-md-8">
-                    <iframe src="../graphs/test.html.html" class="w-100" height="500" id="graphDisplay"></iframe>
-                </div>
-                
-                <!-- Information section occupying 4 columns -->
-                <!-- TODO: FIX FORMATTING OF TEXT: maybe the credibility can be on the right? something about columns again -->
-                <div class="col-12 col-md-4 flex-column">
-                    <div class="p-3 border bg-secondary">
-                        <h3 id="articleName" class="text-white">Article Name</h3>
-                        <h4 id="articleSource" class="text-white">Article Source</h4>
-                        <!-- Should we change the colour based on the credibility? e.g. >80 green -->
-                        <h5 id="articleCredibility" class="text-warning">69</h5>
-                        <a id="articleLink" class="text-danger" href="https://reddit.com/r/ZZZ_Official" target="_blank" rel="noopener noreferrer">Link to article</a>
-                        <p id="articleSummary" class="text-white">AI SUMMARY GOES HERE</p>
+    <!-- TODO: FIX BORDERS TO OCCUPY LARGER SPACE -->
+    <!-- Div area for main content-->
+    <div class="container-fluid mt-5">
+        <div class="row">
+            <!-- iFrame which will store the graphs occupying 8 columns -->
+            <div class="col-12 col-md-8">
+                <iframe src="../graphs/test.html.html" class="w-100" height="500" id="graphDisplay"></iframe>
+            </div>
 
-                        <h6>Related</h5>
+            <!-- Information section occupying 4 columns -->
+            <!-- TODO: FIX FORMATTING OF TEXT: maybe the credibility can be on the right? something about columns again -->
+            <div class="col-12 col-md-4 flex-column">
+                <div class="p-3 border bg-secondary">
+                    <h3 id="articleName" class="text-white">Article Name</h3>
+                    <h4 id="articleSource" class="text-white">Article Source</h4>
+                    <!-- Should we change the colour based on the credibility? e.g. >80 green -->
+                    <h5 id="articleCredibility" class="text-warning">69</h5>
+                    <a id="articleLink" class="text-danger" href="https://reddit.com/r/ZZZ_Official" target="_blank"
+                        rel="noopener noreferrer">Link to article</a>
+                    <p id="articleSummary" class="text-white">AI SUMMARY GOES HERE</p>
+
+                    <h6>Related</h5>
                         <div id="relatedArticles"></div>
                         <h6>Tags</h5>
-                        <div id="articleTags"></div>
+                            <div id="articleTags"></div>
 
-                        
-                    </div>
+
                 </div>
             </div>
-
         </div>
 
+    </div>
 
 
 
-        <script>
 
-            var OFFLINECOPY = []; // This will store all the Articles from the DB for quicker search
+    <script>
 
-            // Once Dashboard loads, get Articles from DB
-            window.onload = function() {
-                axios.get('http://127.0.0.1:5000/getArticleNames', {}
-                )
-                    .then(response => {                  
-                        // console.log(response.data);      
-                        for (var article of response.data) {
-                            OFFLINECOPY.push(article[0]);
-                        }
-                    })
-                    .catch(error => {
-                        console.error(error);
-                    });
-            }
+        var OFFLINECOPY = []; // This will store all the Articles from the DB for quicker search
+
+        // Once Dashboard loads, get Articles from DB
+        window.onload = function () {
+            axios.get('http://127.0.0.1:5000/getArticleNames', {}
+            )
+                .then(response => {
+                    console.log(response.data);      
+                    for (var article of response.data) {
+                        OFFLINECOPY.push(article[0]);
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        }
 
 
-            function updateSearch() {
-                // Get references to the DOM elements
-                const searchInput = document.getElementById("searchInput").value;
-                const searchResults = document.getElementById("searchResults");
+        function updateSearch() {
+            // Get references to the DOM elements
+            const searchInput = document.getElementById("searchInput").value;
+            const searchResults = document.getElementById("searchResults");
 
-                searchResults.innerHTML = "";
-                
-                // Filter the data
-                const filteredData = OFFLINECOPY.filter(article => article.toLowerCase().includes(searchInput.toLowerCase()));
+            searchResults.innerHTML = "";
 
-                // If no results, display a message
-                if (filteredData.length === 0) {
-                    searchResults.innerHTML = '<li class="list-group-item">No results found</li>';
-                } else {
-                    // Append filtered data as list items
-                    // TODO: Add ability to click on it to send data to updateInfo()
-                    filteredData.forEach(item => {
+            // Filter the data
+            const filteredData = OFFLINECOPY.filter(article => article.toLowerCase().includes(searchInput.toLowerCase()));
+
+            // If no results, display a message
+            if (filteredData.length === 0) {
+                searchResults.innerHTML = '<li class="list-group-item">No results found</li>';
+            } else {
+                // Append filtered data as list items
+                // TODO: Add ability to click on it to send data to updateInfo()
+                filteredData.forEach(item => {
                     const listItem = document.createElement("li");
                     listItem.classList.add("list-group-item");
                     listItem.textContent = item;
 
                     // Add a click event listener to the list item
-                    listItem.addEventListener("click", function() {
+                    listItem.addEventListener("click", function () {
                         updateInfo(item);
                     });
 
                     searchResults.appendChild(listItem);
-                    });
-                }
+                });
             }
+        }
 
 
-            function uploadInfo() {
-                // Function will send the file uploaded to Flask Server for processing.
-                // Should have a popup which tells users if successful or not, and some error information
+        function uploadInfo() {
+            // Function will send the file uploaded to Flask Server for processing.
+            // Should have a popup which tells users if successful or not, and some error information
 
-                // TODO? MAYBE NEED FOR MVP
-            }
-
-
-            function updateInfo(articleName) {
-                // Clear Search results regardless
-                document.getElementById("searchResults").innerText = '';
-                document.getElementById("articleTags").innerHTML = '';
-                document.getElementById("relatedArticles").innerText = '';
+            // TODO? MAYBE NEED FOR MVP
+        }
 
 
-
-                // Get information from DB based on the article name
-                axios.get(`http://127.0.0.1:5000/getArticleInfo/${articleName}`, {
-                })
-                    .then(response => {
-                        // console.log(response.data);
-
-                        var resultArray = response.data[0];
-
-                        // Should return an array of 7 elements
-                        // 0: Article Link + graph source
-                        // 1: Full Article, won't be used
-                        // 2: Article Name
-                        // 3: Article Summary
-                        // 4: Credibility
-                        // 5: Tags
-                        // 6: Related, should be based on tags; Dynamically search
-
-                        // Change the search Input value, article link and article name
-                        document.getElementById("searchInput").value = resultArray[2];
-                        document.getElementById("articleLink").href = resultArray[0];
-                        document.getElementById("articleName").innerText = resultArray[2];
-
-                        // Change credibility
-                        document.getElementById("articleCredibility").innerText = resultArray[4];
-                        // Update colour of number
-                        var colourpicker = document.getElementById("articleCredibility");
-                        colourpicker.classList.remove('text-success', 'text-danger', 'text-warning');
-                        if (Number(colourpicker.innerText) < 50) {
-                            colourpicker.classList.add('text-danger');
-                        }
-                        else if (Number(colourpicker.innerText) < 70) {
-                            colourpicker.classList.add('text-warning');
-                        }
-                        else {
-                            colourpicker.classList.add('text-success');
-
-                        }
-
-                        // Change Article Summary
-                        document.getElementById("articleSummary").innerText = resultArray[3];
-                        // Change Article Source
-                        let parsedUrl = new URL(resultArray[0]);
-                        document.getElementById("articleSource").innerText = parsedUrl.hostname;
-
-                        // Change the graph source
-                        let parts = parsedUrl.pathname.split('/').filter(part => part);
-                        document.getElementById("graphDisplay").src = '../graphs/' + parts[parts.length - 1];
+        function updateInfo(articleName) {
+            // Clear Search results regardless
+            document.getElementById("searchResults").innerText = '';
+            document.getElementById("articleTags").innerHTML = '';
+            document.getElementById("relatedArticles").innerText = '';
 
 
-                        // Get Tags
-                        let tagString = resultArray[5];
-                        var tagArray = tagString.split(',').map(word => word.trim());
-                        
-                        // Add Tags to article and get related articles
-                        var tagContainer = document.getElementById("articleTags");
 
-                        tagArray.forEach(word => {
-                            var badge = document.createElement('span');
-                            badge.classList.add('badge', 'badge-primary', 'mr-2'); // Add Bootstrap classes for styling
-                            badge.textContent = word; // Set the text of the badge
-                            // Append the badge to the container
-                            tagContainer.appendChild(badge);
-                        })
+            // Get information from DB based on the article name
+            axios.get(`http://127.0.0.1:5000/getArticleInfo/${articleName}`, {
+            })
+                .then(response => {
+                    // console.log(response.data);
 
-                        // Remove duplicates and Add related articles 
-                        addRelatedArticles(tagArray, resultArray[2]);
+                    var resultArray = response.data[0];
 
+                    // Should return an array of 7 elements
+                    // 0: Article Link + graph source
+                    // 1: Full Article, won't be used
+                    // 2: Article Name
+                    // 3: Article Summary
+                    // 4: Credibility
+                    // 5: Tags
+                    // 6: Related, should be based on tags; Dynamically search
+
+                    // Change the search Input value, article link and article name
+                    document.getElementById("searchInput").value = resultArray[2];
+                    document.getElementById("articleLink").href = resultArray[0];
+                    document.getElementById("articleName").innerText = resultArray[2];
+
+                    // Change credibility
+                    document.getElementById("articleCredibility").innerText = resultArray[4];
+                    // Update colour of number
+                    var colourpicker = document.getElementById("articleCredibility");
+                    colourpicker.classList.remove('text-success', 'text-danger', 'text-warning');
+                    if (Number(colourpicker.innerText) < 50) {
+                        colourpicker.classList.add('text-danger');
+                    }
+                    else if (Number(colourpicker.innerText) < 70) {
+                        colourpicker.classList.add('text-warning');
+                    }
+                    else {
+                        colourpicker.classList.add('text-success');
+
+                    }
+
+                    // Change Article Summary
+                    document.getElementById("articleSummary").innerText = resultArray[3];
+                    // Change Article Source
+                    let parsedUrl = new URL(resultArray[0]);
+                    document.getElementById("articleSource").innerText = parsedUrl.hostname;
+
+                    // Change the graph source
+                    let parts = parsedUrl.pathname.split('/').filter(part => part);
+                    document.getElementById("graphDisplay").src = '../graphs/' + parts[parts.length - 1];
+
+
+                    // Get Tags
+                    let tagString = resultArray[5];
+                    var tagArray = tagString.split(',').map(word => word.trim());
+
+                    // Add Tags to article and get related articles
+                    var tagContainer = document.getElementById("articleTags");
+
+                    tagArray.forEach(word => {
+                        var badge = document.createElement('span');
+                        badge.classList.add('badge', 'badge-primary', 'mr-2'); // Add Bootstrap classes for styling
+                        badge.textContent = word; // Set the text of the badge
+                        // Append the badge to the container
+                        tagContainer.appendChild(badge);
                     })
-                    .catch( error => {
-                        console.error(error);
-                    });
-            }
+
+                    // Remove duplicates and Add related articles 
+                    addRelatedArticles(tagArray, resultArray[2]);
+
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        }
 
 
-            async function addRelatedArticles(myArray, currentArticleName) {
-                // Generate related articles dynamically
-                let related = [];
+        async function addRelatedArticles(myArray, currentArticleName) {
+            // Generate related articles dynamically
+            let related = [];
 
-                for (let word of myArray) {
-                    try {
-                        let response = await axios.get(`http://127.0.0.1:5000/getRelatedArticle/${word}`);
-                        response = response.data.flat();
-                        response.forEach(element => related.push(element));
-                    }
-                    catch (error) {
-                        console.error('Error fetching data:', error);
-                    }
+            for (let word of myArray) {
+                try {
+                    let response = await axios.get(`http://127.0.0.1:5000/getRelatedArticle/${word}`);
+                    response = response.data.flat();
+                    response.forEach(element => related.push(element));
                 }
-
-                // Now should have elements already
-                // console.log(related);
-
-                // Remove all the duplicates and the current article if it is inside
-                let uniqueArray = related.filter((value, index, self) => self.indexOf(value) === index);
-                uniqueArray = uniqueArray.filter(item => item !== currentArticleName);
-                // console.log(uniqueArray);
-
-                // Loop to add to list
-                var articleContainer = document.getElementById("relatedArticles");
-                uniqueArray.forEach(item => {
-                    const anchorItem = document.createElement("a");
-                    anchorItem.textContent = item;
-                    anchorItem.classList.add('text-danger')
-                    // Add a click event listener to the list item
-                    anchorItem.addEventListener("click", function() {
-                        updateInfo(item);
-                    });
-
-                    articleContainer.appendChild(anchorItem);
-                    });
-
+                catch (error) {
+                    console.error('Error fetching data:', error);
+                }
             }
 
-            
+            // Now should have elements already
+            // console.log(related);
+
+            // Remove all the duplicates and the current article if it is inside
+            let uniqueArray = related.filter((value, index, self) => self.indexOf(value) === index);
+            uniqueArray = uniqueArray.filter(item => item !== currentArticleName);
+            // console.log(uniqueArray);
+
+            // Loop to add to list
+            var articleContainer = document.getElementById("relatedArticles");
+            uniqueArray.forEach(item => {
+                const anchorItem = document.createElement("a");
+                anchorItem.textContent = item;
+                anchorItem.classList.add('text-danger')
+                // Add a click event listener to the list item
+                anchorItem.addEventListener("click", function () {
+                    updateInfo(item);
+                });
+
+                articleContainer.appendChild(anchorItem);
+            });
+
+        }
+
+        var ARTICLES_CACHE = []; // Store all article data
+
+        // Load articles when the page loads
+        window.onload = function () {
+            loadArticles();
+        }
+
+        function loadArticles() {
+            axios.get('http://127.0.0.1:5000/api/articles')
+                .then(response => {
+                    ARTICLES_CACHE = response.data;
+                    updateSearch(); // Update the search results with initial data
+                })
+                .catch(error => {
+                    console.error('Error loading articles:', error);
+                });
+        }
+
+        function updateSearch() {
+            const searchInput = document.getElementById("searchInput").value.toLowerCase();
+            const searchResults = document.getElementById("searchResults");
+
+            searchResults.innerHTML = "";
+
+            const filteredArticles = ARTICLES_CACHE.filter(article =>
+                (article.articlename && article.articlename.toLowerCase().includes(searchInput)) ||
+                (article.link && article.link.toLowerCase().includes(searchInput)) ||
+                (article.tags && article.tags.toLowerCase().includes(searchInput))
+            );
+
+            if (filteredArticles.length === 0) {
+                searchResults.innerHTML = '<div class="list-group-item">No results found</div>';
+            } else {
+                filteredArticles.forEach(article => {
+                    const listItem = document.createElement("div");
+                    listItem.classList.add("list-group-item");
+
+                    // Create a container for the article information
+                    const content = document.createElement("div");
+
+                    // Add article name or URL if name is not available
+                    const title = document.createElement("div");
+                    title.style.fontWeight = "bold";
+                    title.textContent = article.articlename || extractDomain(article.link);
+                    content.appendChild(title);
+
+                    // Add truncated link as subtitle
+                    if (article.link) {
+                        const link = document.createElement("div");
+                        link.style.fontSize = "0.8em";
+                        link.style.opacity = "0.7";
+                        link.textContent = truncateUrl(article.link, 50);
+                        content.appendChild(link);
+                    }
+
+                    listItem.appendChild(content);
+                    listItem.onclick = () => {
+                        updateArticleDisplay(article);
+                        // Add visual feedback for selected item
+                        document.querySelectorAll('.list-group-item').forEach(item => {
+                            item.classList.remove('active');
+                        });
+                        listItem.classList.add('active');
+                    };
+
+                    searchResults.appendChild(listItem);
+                });
+            }
+        }
+
+        function truncateUrl(url, maxLength) {
+            if (url.length <= maxLength) return url;
+            return url.substring(0, maxLength - 3) + '...';
+        }
+
+        function updateArticleDisplay(article) {
+            // Update the article information section
+            document.getElementById("articleName").innerText = article.articlename || 'Untitled';
+            document.getElementById("articleSource").innerText = extractDomain(article.link);
+            document.getElementById("articleCredibility").innerText = article.credibility || 'N/A';
+            document.getElementById("articleLink").href = article.link;
+            document.getElementById("articleSummary").innerText = article.summary || 'No summary available';
+
+            // Update credibility color
+            const credibilityElement = document.getElementById("articleCredibility");
+            credibilityElement.classList.remove('text-success', 'text-danger', 'text-warning');
+
+            const credibility = parseInt(article.credibility);
+            if (!isNaN(credibility)) {
+                if (credibility < 50) {
+                    credibilityElement.classList.add('text-danger');
+                } else if (credibility < 70) {
+                    credibilityElement.classList.add('text-warning');
+                } else {
+                    credibilityElement.classList.add('text-success');
+                }
+            }
+        }
+
+        // Helper function to extract domain from URL
+        function extractDomain(url) {
+            try {
+                const domain = new URL(url).hostname;
+                return domain.replace('www.', '');
+            } catch {
+                return url;
+            }
+        }
+
+        // Function to handle file upload
+        function uploadInfo() {
+            const fileInput = document.getElementById('csvFileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Please select a file first!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            axios.post('http://127.0.0.1:5000/api/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+                .then(response => {
+                    alert('File uploaded successfully!');
+                    loadArticles(); // Reload the articles list
+                })
+                .catch(error => {
+                    console.error('Error uploading file:', error);
+                    alert('Error uploading file. Please try again.');
+                });
+        }
 
 
-                                        
 
 
-        </script>
-    
 
- 
-    
+    </script>
+
+
+
+
 
     <!-- Bootstrap JS bundle to be placed before the closing </body> tag -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script> 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
 </body>
+
 </html>
