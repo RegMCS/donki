@@ -17,20 +17,36 @@ You can access the deployed app here:
    git clone https://github.com/RegMCS/donki
    cd donki
    ```
-
-2. **Install dependencies:**
+2. **Creating a Virtual Environment**
+   ```sh
+   python3 -m venv .venv
+   ```
+3. **Activate the virtual environment:**
+   * On Windows:
+   ```sh
+   .venv\Scripts\activate
+   ```
+   * On macOS and Linux:
+   ```sh
+   source .venv/bin/activate
+   ```
+4. **Install dependencies:**
 
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Run the Flask app**
+5. **Run the Flask app**
 
+   ```bash
+   flask run app.py
+   ```
+   OR
    ```bash
    python app.py
    ```
 
-4. **COpen your browser:**
+6. **Open your browser:**
 
    ```
    http://localhost:5000
