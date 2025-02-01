@@ -209,53 +209,147 @@ def update_article_names():
             'error': str(e)
         }), 500
     
-import tempfile
-
 @app.route('/generate_graph', methods=['GET', 'POST'])
 def generate_graph():
-    search_query = request.args.get('search', 'Apple')  # Default search term
+    search_query = request.args.get('search', '')  # Empty string by default
+    threat_keywords = ["extremist", "terrorism", "subversion", "espionage", "sedition", "separatist", "radical", "militant", "violence", "illegal", "threat", "security", "infiltrate", "unrest", "propaganda", "communal", "racial", "religious", "intelligence", "clandestine"]
 
-    # Read the data from the nodes.json file
     try:
         with open('nodes.json', 'r') as nodes_file:
             data = json.load(nodes_file)
     except Exception as e:
         return f"Error loading JSON file: {str(e)}"
 
-    # Initialize the Pyvis network
-    net = Network(height='600px', width='100%', directed=True)
+    net = Network(height='600px', width='100%', directed=True, bgcolor='#ffffff', font_color='black')
+    
+    # Network options remain the same
+    net.set_options("""
+    const options = {
+        "nodes": {
+            "shape": "dot",
+            "size": 25,
+            "font": {
+                "size": 14,
+                "color": "black"
+            },
+            "borderWidth": 2,
+            "shadow": true
+        },
+        "edges": {
+            "color": {
+                "color": "#97c2fc",
+                "highlight": "#fb7e81"
+            },
+            "width": 2,
+            "shadow": true,
+            "smooth": {
+                "type": "continuous"
+            },
+            "arrows": {
+                "to": {
+                    "enabled": true,
+                    "scaleFactor": 0.5
+                }
+            }
+        },
+        "physics": {
+            "barnesHut": {
+                "gravitationalConstant": -80000,
+                "springLength": 250,
+                "springConstant": 0.001,
+                "avoidOverlap": 0.1
+            },
+            "minVelocity": 0.75
+        },
+        "interaction": {
+            "hover": true,
+            "navigationButtons": true,
+            "keyboard": true
+        }
+    }""")
 
-    # Step 1: Find all nodes matching the search query
-    matching_nodes = {node['id'] for node in data['nodes'] if search_query.lower() in node['label'].lower()}
+    # If search query is empty, include all nodes
+    if not search_query:
+        included_nodes = {node['id'] for node in data['nodes']}
+        matching_nodes = set()  # No matching nodes when no search
+    else:
+        # Find matching nodes only when there's a search query
+        matching_nodes = {node['id'] for node in data['nodes'] if search_query.lower() in node['label'].lower()}
+        included_nodes = set(matching_nodes)
+        # Add connected nodes for search results
+        for edge in data['edges']:
+            if edge['from'] in matching_nodes:
+                included_nodes.add(edge['to'])
+            elif edge['to'] in matching_nodes:
+                included_nodes.add(edge['from'])
 
-    # Step 2: Find all connected nodes (indirectly related)
-    included_nodes = set(matching_nodes)  # Start with matching nodes
-    for edge in data['edges']:
-        if edge['from'] in matching_nodes:
-            included_nodes.add(edge['to'])
-        elif edge['to'] in matching_nodes:
-            included_nodes.add(edge['from'])
+    # Find threat nodes (always active)
+    threat_nodes = {node['id'] for node in data['nodes'] 
+                   if any(keyword in node['label'].lower() for keyword in threat_keywords)}
 
-    # Step 3: Add the filtered nodes to the network
+    # Add nodes
     for node in data['nodes']:
         if node['id'] in included_nodes:
+            is_match = node['id'] in matching_nodes
+            is_threat = node['id'] in threat_nodes
+            
+            if is_threat:
+                node_color = '#ff4136'  # Red for threat nodes
+            elif is_match:
+                node_color = '#ffdc00'  # Yellow for search matches
+            else:
+                node_color = '#97c2fc'  # Default blue
+                
             net.add_node(
-                node['id'], 
-                label=node['label'],  # Ensure label is explicitly set
-                color=node.get('color', 'blue'),  # Default color if missing
-                shape=node.get('shape', 'dot'),  # Default shape if missing
-                title=node.get('title', ''),  # Tooltip
-                font={"color": node.get('font', {}).get('color', 'black')}  # Ensure font color is set
+                node['id'],
+                label=node['label'],
+                color=node_color,
+                size=30 if (is_match or is_threat) else 25,
+                borderWidth=3 if (is_match or is_threat) else 2,
+                title=node.get('title', ''),
             )
 
-    # Step 4: Add edges that connect the included nodes
+    # Add edges
     for edge in data['edges']:
         if edge['from'] in included_nodes and edge['to'] in included_nodes:
-            net.add_edge(edge['from'], edge['to'], 
-                         label=edge.get('label', ''), 
-                         title=edge.get('title', ''))
+            is_threat_edge = (edge['from'] in threat_nodes or edge['to'] in threat_nodes)
+            
+            net.add_edge(
+                edge['from'], 
+                edge['to'],
+                label=edge.get('label', ''),
+                title=edge.get('title', ''),
+                color={'color': '#ff4136' if is_threat_edge else '#97c2fc', 
+                       'highlight': '#fb7e81'},
+                width=3 if is_threat_edge else 2
+            )
 
-    # Save to a temporary HTML file and read it
+    # JavaScript for interaction remains the same
+    net.html += """
+    <script>
+        network.on("click", function(params) {
+            network.unselectAll();
+            
+            if (params.nodes.length > 0) {
+                const selectedNode = params.nodes[0];
+                const connectedNodes = network.getConnectedNodes(selectedNode);
+                const connectedEdges = network.getConnectedEdges(selectedNode);
+                
+                network.selectNodes([selectedNode, ...connectedNodes]);
+                network.selectEdges(connectedEdges);
+            }
+        });
+
+        network.on("hoverNode", function(params) {
+            document.body.style.cursor = 'pointer';
+        });
+
+        network.on("blurNode", function(params) {
+            document.body.style.cursor = 'default';
+        });
+    </script>
+    """
+
     with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as temp_file:
         graph_path = temp_file.name
         net.save_graph(graph_path)
@@ -264,16 +358,6 @@ def generate_graph():
         graph_html = file.read()
 
     return render_template('graph.html', graph_html=graph_html, search_query=search_query)
-
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":

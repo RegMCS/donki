@@ -5,3 +5,4 @@
 /__pycache__
 /flask-app/__pycache__
 jsondump.py
+/flask-app/random/__pycache__

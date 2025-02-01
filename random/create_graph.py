@@ -29,7 +29,7 @@ def generate_graph(relationships, outfile):
 def create_custom_pyvis_network(relationships, output_file):
     net = Network(height='600px', width='100%', directed=True)
 
-    threat_keywords = ["attack", "threat", "security", "breach", "vulnerable"]
+    threat_keywords = ["attack", "threat", "security", "breach", "vulnerable", "malware", "hack", "exploit", "ransomware", "phishing", "virus", "fraud", "scam", "compromise", "infiltrate","crime", "terror", "extremist", "protest", "riot", "violence", "radical", "smuggle", "trafficking", "illegal", "attack", "threat", "breach", "infiltrate", "smuggling", "unrest", "militant", "militia", "disorder", "gang"]
 
     added_nodes = set()
     for subject, verb, obj in relationships:
