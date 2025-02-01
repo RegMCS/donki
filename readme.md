@@ -1,30 +1,39 @@
-# Flask App
+# Threat Analytics Tool
 
-A simple Flask application to demonstrate how to set up a basic web server with Python and Flask.
+The Threat Analysis Tool is an advanced analytics solution designed to extract entities and relationships from unstructured text data. Built to address the challenges of analyzing complex threat-related information, this tool enables users to uncover meaningful insights and visualize intricate relationships throught network graphs within the data. The tool uses GPT-4o LLM model for threat analysis and sorting.
 
----
+## Live Deployment
 
-## Features
-
-- Basic Flask setup
-- Includes a default home route (`/`)
-- Ready for deployment or further development
+You can access the deployed app here:  
+👉 [https://donki-git-main-regmcs-projects.vercel.app/](https://donki-git-main-regmcs-projects.vercel.app/)
 
 ---
 
-## Getting Started
+## Running Locally
 
-### Prerequisites
+1. **Clone the repository:**
 
-- Python 3.x
-- pip (Python package manager)
-- Virtual environment (optional but recommended)
-
----
-
-### Installation
-
-1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your-username/flask-app.git
-   cd flask-app
+   git clone https://github.com/RegMCS/donki
+   cd donki
+   ```
+
+2. **Install dependencies:**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Run the Flask app**
+
+   ```bash
+   python app.py
+   ```
+
+4. **COpen your browser:**
+
+   ```
+   http://localhost:5000
+   ```
+
+
